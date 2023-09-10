@@ -11,44 +11,104 @@ export const unstable_settings = {
   initialRouteName: "index",
 };
 
+import {
+  // Import the creation function
+  createStackNavigator,
+  // Import the types
+  StackNavigationOptions,
+} from "@react-navigation/stack";
+
+import { withLayoutContext } from "expo-router";
+
+const { Navigator } = createStackNavigator();
+
+// https://github.com/expo/router/issues/640#issuecomment-1626767444
+// This can be used like `<JsStack />`
+export const JsStack = withLayoutContext<
+  StackNavigationOptions,
+  typeof Navigator
+>(Navigator);
+import { TransitionPresets } from "@react-navigation/stack";
+
 export default function RootLayoutNav() {
   const navigation = useNavigation();
   return (
     <BottomSheetModalProvider>
-      <Stack>
-        <Stack.Screen
-          name="index"
-          options={{
-            header: () => <CustomHeader />,
-          }}
-        />
-        <Stack.Screen
-          name="(modal)/filter"
-          options={{
-            presentation: Platform.OS === "ios" ? "modal" : undefined,
-            headerTitle: "Filter",
-            headerShadowVisible: false,
-            headerStyle: {
-              backgroundColor: Colors.lightGrey,
-            },
-            headerLeft: () => {
-              return Platform.OS === "ios" ? (
-                <TouchableOpacity
-                  onPress={() => {
-                    navigation.goBack();
-                  }}
-                >
-                  <Ionicons
-                    name="close-outline"
-                    size={28}
-                    color={Colors.primary}
-                  />
-                </TouchableOpacity>
-              ) : undefined;
-            },
-          }}
-        />
-      </Stack>
+      {Platform.OS === "android" ? (
+        <JsStack>
+          <JsStack.Screen
+            name="index"
+            options={{
+              header: () => <CustomHeader />,
+            }}
+          />
+          <JsStack.Screen
+            name="(modal)/filter"
+            options={{
+              ...TransitionPresets.ModalPresentationIOS,
+              presentation: "modal",
+              headerTitle: "Filter",
+              headerShadowVisible: false,
+              headerStyle: {
+                backgroundColor: Colors.lightGrey,
+              },
+              headerLeft: () => {
+                return (
+                  <TouchableOpacity
+                    style={{
+                      marginLeft: 15,
+                    }}
+                    onPress={() => {
+                      navigation.goBack();
+                    }}
+                  >
+                    <Ionicons
+                      name="close-outline"
+                      size={28}
+                      color={Colors.primary}
+                    />
+                  </TouchableOpacity>
+                );
+              },
+            }}
+          />
+        </JsStack>
+      ) : (
+        <Stack>
+          <Stack.Screen
+            name="index"
+            options={{
+              header: () => <CustomHeader />,
+            }}
+          />
+          <Stack.Screen
+            name="(modal)/filter"
+            options={{
+              presentation: "modal",
+              headerTitle: "Filter",
+              headerShadowVisible: false,
+              headerStyle: {
+                backgroundColor: Colors.lightGrey,
+              },
+              headerLeft: () => {
+                return (
+                  <TouchableOpacity
+                    onPress={() => {
+                      navigation.goBack();
+                    }}
+                  >
+                    <Ionicons
+                      name="close-outline"
+                      size={28}
+                      color={Colors.primary}
+                    />
+                  </TouchableOpacity>
+                );
+              },
+            }}
+          />
+        </Stack>
+      )}
     </BottomSheetModalProvider>
   );
 }
